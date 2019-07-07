@@ -1,3 +1,5 @@
+image: "ubuntu:18.04"
+
 variables:
   GIT_STRATEGY: "pull"
   GIT_SUBMODULE_STRATEGY: "recursive"
@@ -7,9 +9,11 @@ before_script:
  - |
     apt-get update -qq &&
     apt-get install -qq \
+        bison \
         build-essential \
         curl \
         dosfstools \
+        flex \
         fuse \
         genisoimage \
         git \
@@ -20,26 +24,15 @@ before_script:
         software-properties-common \
         syslinux \
         syslinux-utils \
+        texinfo \
         wget &&
-    apt-key adv -q --batch --yes --keyserver keyserver.ubuntu.com --recv-keys AA12E97F0881517F &&
-    add-apt-repository 'deb https://static.redox-os.org/toolchain/apt ./' &&
-    apt-get update -qq &&
-    apt-get purge -qq binutils-doc &&
-    apt-get install -qq x86-64-unknown-redox-gcc &&
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
 
 img:
     script:
      - |
         source "$HOME/.cargo/env" &&
-        rustup update &&
-        rustup component add rust-src &&
-        cargo install cargo-config xargo &&
-        pushd bootloader-efi &&
-        rustup update &&
-        rustup component add rust-src &&
-        mkdir -p "$HOME/.rustup/toolchains/nightly-2017-11-29-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin" &&
-        popd &&
+        cargo install cargo-config cargo-xbuild xargo &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
     artifacts:
         paths:
